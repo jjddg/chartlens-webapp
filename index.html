@@ -1,41 +1,24 @@
 from pathlib import Path
+import re
 
-base_path = Path("/mnt/data/chartlens_full_landing_to_app_v6_tg_mobile_good.html")
-html = base_path.read_text(encoding="utf-8")
+src = Path("/mnt/data/chartlens_final_v1_v6css.html").read_text(encoding="utf-8")
 
-final_css = """
-/* =========================================================
-   FINAL TOUCHES (from later fixes) — keep v6 visual style
-   - Center single last card in odd grids (Get insight / Confidence / Vision Pro)
-   - Preserve original WOW borders/colors
-   ========================================================= */
-.steps > .step:last-child:nth-child(odd),
-.pricing > .plan:last-child:nth-child(odd){
-  grid-column: 1 / -1;
-  justify-self: center;
-  width: min(420px, 100%);
-}
-
-/* Ensure landing blocks keep the clean WOW look */
-.steps .step,
-.pricing .plan{
-  background: var(--panel);
-  border: 1px solid var(--border);
-  box-shadow: none;
-}
-
-/* Soft glow only (no border color change) */
-.steps .step:hover,
-.pricing .plan:hover{
-  box-shadow: 0 24px 90px rgba(0,0,0,0.50), 0 0 48px rgba(34,243,182,0.14);
-  transform: translateY(-2px);
-}
+# Add a small "landing lift" CSS override to reduce the empty space under header on first page.
+lift_css = """
+/* ===== Landing lift: reduce empty space under header (first page) ===== */
+#authSection { padding-top: 0 !important; margin-top: 0 !important; }
+.landing-root { margin-top: -0.65rem !important; } /* pull landing up slightly */
+#authSection .hero { padding-top: 2.2rem !important; } /* was larger; lift content */
 """
 
-if "FINAL TOUCHES (from later fixes)" not in html:
-    html = html.replace("</style>", "\n" + final_css + "\n</style>", 1)
+# If a mobile header safe-area padding exists, keep it, but reduce extra space under header by tightening header bottom gap.
+lift_css += """
+.header { margin-bottom: 0.55rem !important; } /* tighter gap to content */
+"""
 
-out_path = Path("/mnt/data/chartlens_final_v1_v6css.html")
-out_path.write_text(html, encoding="utf-8")
+if "Landing lift: reduce empty space under header" not in src:
+    src = src.replace("</style>", "\n" + lift_css + "\n</style>", 1)
 
-str(out_path)
+out = Path("/mnt/data/chartlens_final_v2_lift_landing.html")
+out.write_text(src, encoding="utf-8")
+str(out)
