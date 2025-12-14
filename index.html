@@ -1428,68 +1428,41 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 
 
 
-
-/* ===== Interactive glow (hover + in-view) ===== */
-.step, .plan, .card {
-  position: relative;
-  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
-}
-
-.step:hover, .plan:hover, .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 0 1px rgba(34,243,182,0.10), 0 26px 110px rgba(0,0,0,0.55), 0 0 55px rgba(34,243,182,0.18) !important;
-}
-
-.in-view {
-  box-shadow: 0 0 0 1px rgba(34,243,182,0.08), 0 22px 90px rgba(0,0,0,0.45), 0 0 48px rgba(34,243,182,0.14) !important;
-}
-
-
-
-/* ===== Center only the requested blocks ===== */
-.step[data-center="1"], .plan[data-center="1"] { text-align: center !important; }
-.step[data-center="1"] h3, .plan[data-center="1"] h3 { margin-left:auto; margin-right:auto; }
-.step[data-center="1"] p, .plan[data-center="1"] ul, .plan[data-center="1"] .price { margin-left:auto; margin-right:auto; }
-
-
-
-/* ===== Restore border appearance (as previous file) ===== */
-.step, .plan, .card {
-  border-color: rgba(255,255,255,0.12) !important;
-}
-
-
-
-/* ===== FIX: center the last card when grids have an odd item count ===== */
+/* =========================================================
+   FINAL TOUCHES (from later fixes) — keep v6 visual style
+   - Center single last card in odd grids (Get insight / Confidence / Vision Pro)
+   - Preserve original WOW borders/colors
+   ========================================================= */
 .steps > .step:last-child:nth-child(odd),
-.pricing > .plan:last-child:nth-child(odd) {
+.pricing > .plan:last-child:nth-child(odd){
   grid-column: 1 / -1;
   justify-self: center;
   width: min(420px, 100%);
 }
 
-/* Keep steps/pricing blocks looking like the original WOW landing */
+/* Ensure landing blocks keep the clean WOW look */
 .steps .step,
-.pricing .plan {
-  background: rgba(255,255,255,0.06) !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  border-radius: 18px !important;
-  box-shadow: none !important;
-  text-align: center; /* landing blocks are centered */
+.pricing .plan{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: none;
 }
 
-/* Subtle glow only (no border color change) */
+/* Soft glow only (no border color change) */
 .steps .step:hover,
-.pricing .plan:hover {
+.pricing .plan:hover{
+  box-shadow: 0 24px 90px rgba(0,0,0,0.50), 0 0 48px rgba(34,243,182,0.14);
   transform: translateY(-2px);
-  box-shadow: 0 24px 90px rgba(0,0,0,0.50), 0 0 48px rgba(34,243,182,0.14) !important;
 }
 
-/* In-view highlight without changing the border */
-.steps .step.in-view,
-.pricing .plan.in-view {
-  box-shadow: 0 22px 80px rgba(0,0,0,0.42), 0 0 42px rgba(34,243,182,0.10) !important;
-}
+
+
+/* ===== Landing lift: reduce empty space under header (first page) ===== */
+#authSection { padding-top: 0 !important; margin-top: 0 !important; }
+.landing-root { margin-top: -0.65rem !important; } /* pull landing up slightly */
+#authSection .hero { padding-top: 2.2rem !important; } /* was larger; lift content */
+
+.header { margin-bottom: 0.55rem !important; } /* tighter gap to content */
 
 </style>
 </head>
@@ -1560,7 +1533,7 @@ body { padding-bottom: env(safe-area-inset-bottom); }
       <h3>AI scans structure</h3>
       <p>Trend, pattern, volatility zones.</p>
     </div>
-    <div class="step" data-center="1">
+    <div class="step">
       <h3>Get insight</h3>
       <p>Clear bias, signal and confidence.</p>
     </div>
@@ -1579,7 +1552,7 @@ body { padding-bottom: env(safe-area-inset-bottom); }
       <h3>Pattern</h3>
       <p>Breakouts, triangles, ranges — marked like an analyst would.</p>
     </div>
-    <div class="step" data-center="1">
+    <div class="step">
       <h3>Confidence</h3>
       <p>Clear probability-style confidence to keep decisions rational.</p>
     </div>
@@ -1604,7 +1577,7 @@ body { padding-bottom: env(safe-area-inset-bottom); }
         <li>Full AI analysis</li>
       </ul>
     </div>
-    <div class="plan" data-center="1">
+    <div class="plan">
       <h3>Vision Pro</h3>
       <div class="price">$79+</div>
       <ul>
@@ -2179,7 +2152,7 @@ function handleAnalyze() {
             document.addEventListener("mousemove", (e) => {
                 const x = (window.innerWidth / 2 - e.clientX) / 40;
                 const y = (window.innerHeight / 2 - e.clientY) / 40;
-                graph.style.transform = `rotateY(calc(var(--scrollRy) + ${x}deg)) rotateX(calc(var(--scrollRx) + ${y}deg))`;
+                graph.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
             });
         })();
 
@@ -2235,7 +2208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     raf = 0;
     const ry = (0.5 - nx) * 12;  // rotateY
     const rx = (ny - 0.5) * 10;  // rotateX
-    g.style.transform = `rotateY(calc(var(--scrollRy) + ${ry}deg)) rotateX(calc(var(--scrollRx) + ${rx}deg))`;
+    g.style.transform = `rotateY(${ry}deg) rotateX(${rx}deg)`;
   }
 
   function onPoint(x, y){
@@ -2260,69 +2233,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
 })();
 </script>
-
-
-
-<script>
-(function(){
-  // === Glow blocks when they enter viewport ===
-  const targets = Array.from(document.querySelectorAll('.step, .plan, .card'));
-  if ('IntersectionObserver' in window && targets.length) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) e.target.classList.add('in-view');
-        else e.target.classList.remove('in-view');
-      });
-    }, { threshold: 0.25 });
-    targets.forEach(t => io.observe(t));
-  }
-
-  // === Scroll-driven 3D motion for HERO graph ===
-  const g = document.getElementById('graph');
-  if (!g) return;
-
-  // We'll blend pointer tilt (already exists) with a scroll wobble.
-  // Scroll wobble is subtle: keeps "classy", not carnival.
-  let scrollRaf = 0;
-  let baseRx = 0, baseRy = 0;
-
-  function computeBase(){
-    const y = window.scrollY || document.documentElement.scrollTop || 0;
-    // Normalize to a smooth periodic motion
-    baseRy = Math.sin(y * 0.006) * 6;  // left-right
-    baseRx = Math.cos(y * 0.005) * 4;  // up-down
-  }
-
-  function applyBase(){
-    scrollRaf = 0;
-    computeBase();
-    // If mouse/touch tilt also sets transform, we still want scroll to matter.
-    // We'll store base as CSS variables and let the existing handler write rotations additively if present.
-    g.style.setProperty('--scrollRy', baseRy.toFixed(2) + 'deg');
-    g.style.setProperty('--scrollRx', baseRx.toFixed(2) + 'deg');
-  }
-
-  function onScroll(){
-    if (!scrollRaf) scrollRaf = requestAnimationFrame(applyBase);
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  applyBase();
-
-  // Patch: make current transform include scroll rotation even when pointer handler runs.
-  // We wrap the existing pointer transform by listening and reapplying with scroll vars.
-  // If another script sets g.style.transform, we can't intercept it, so we set a CSS rule fallback below.
-})();
-</script>
-
-<style>
-/* Blend scroll rotation into the graph transform using CSS vars */
-#graph {
-  --scrollRx: 0deg;
-  --scrollRy: 0deg;
-  transform: rotateY(var(--scrollRy)) rotateX(var(--scrollRx));
-}
-</style>
 
 </body>
 </html>
