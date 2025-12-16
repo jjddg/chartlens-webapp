@@ -20,7 +20,6 @@
             background: linear-gradient(135deg, #0a0f1c 0%, #0f1419 100%);
             color: #ffffff;
             line-height: 1.6;
-            min-height: 100vh;
         }
 
         :root {
@@ -2337,14 +2336,31 @@ async function analyzeChart(imageBase64, symbol, timeframe) {
   --scrollRy: 0deg;
   transform: rotateY(var(--scrollRy)) rotateX(var(--scrollRx));
 }
-/* Telegram WebApp fix */
-body.tg .hero {
-  padding-top: 0.5rem !important;
-  margin-top: 0 !important;
-  min-height: calc(100vh - 48px);
-  justify-content: flex-start;
-  align-items: flex-start;
+
+/* Telegram WebApp viewport fix */
+body.tg {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100vh;
+  overflow-x: hidden;
 }
+
+/* Главное: убираем фейковую высоту */
+body.tg .hero {
+  min-height: auto !important;
+  height: auto !important;
+  padding-top: 0.5rem !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+}
+
+<script>
+  if (window.Telegram && Telegram.WebApp) {
+    Telegram.WebApp.expand();            // 🔥 КЛЮЧ
+    document.body.classList.add("tg");
+  }
+</script>
+
 
 </style>
 
