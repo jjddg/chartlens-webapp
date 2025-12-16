@@ -2337,7 +2337,22 @@ async function analyzeChart(imageBase64, symbol, timeframe) {
   --scrollRy: 0deg;
   transform: rotateY(var(--scrollRy)) rotateX(var(--scrollRx));
 }
+/* Telegram WebApp fix */
+body.tg .hero {
+  padding-top: 0.5rem !important;
+  margin-top: 0 !important;
+  min-height: calc(100vh - 48px);
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
 </style>
+
+<script>
+  if (window.Telegram && window.Telegram.WebApp) {
+    document.body.classList.add("tg");
+  }
+</script>
 
 </body>
 </html>
