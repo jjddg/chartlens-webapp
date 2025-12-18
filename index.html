@@ -2279,64 +2279,37 @@ async function analyzeChart(imageBase64, symbol, timeframe) {
     const btnAnalyze = document.getElementById('btnAnalyze');
     btnAnalyze.disabled = true;
     btnAnalyze.textContent = '⏳ Analyzing...';
-
     setScan(true);
 
-try {
-  const data = await new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open(
-      "POST",
-      "https://ai-signals-backend.onrender.com/analyze",
-      true
-    );
-
-    xhr.setRequestHeader("Content-Type", "application/json");
-
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState !== 4) return;
-
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          resolve(JSON.parse(xhr.responseText));
-        } catch (e) {
-          reject(new Error("Invalid JSON response"));
+    try {
+        // --- normalize base64 (CRITICAL for iOS / Safari)
+        if (!imageBase64.startsWith("data:image")) {
+            imageBase64 = "data:image/png;base64," + imageBase64;
         }
-      } else {
-        reject(
-          new Error(
-            `XHR error ${xhr.status}: ${xhr.responseText}`
-          )
+
+        imageBase64 = imageBase64.replace(
+            /^data:image\/(heic|heif);base64,/i,
+            "data:image/jpeg;base64,"
         );
-      }
-    };
 
-    xhr.onerror = () => {
-      reject(new Error("XHR network error"));
-    };
-
-    xhr.send(
-      JSON.stringify({
-        image: imageBase64,
-        symbol: symbol,
-        timeframe: timeframe
-      })
-    );
-  });
-
-  // 🔽 дальше твой существующий код
-  // data.ai_signal, data.confidence_score и т.д.
-
-} catch (e) {
-  showError(e.message);
-}
-
-
-
+        const response = await fetch(
+            "https://ai-signals-backend.onrender.com/analyze",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    image: imageBase64,
+                    symbol: symbol,
+                    timeframe: timeframe
+                })
+            }
+        );
 
         if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.detail || "Server error");
+            const text = await response.text();
+            throw new Error(text || "Server error");
         }
 
         const data = await response.json();
@@ -2368,6 +2341,7 @@ try {
     }
 }
 </script>
+
 
 <style>
 /* Blend scroll rotation into the graph transform using CSS vars */
