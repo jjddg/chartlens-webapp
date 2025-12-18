@@ -20,6 +20,7 @@
             background: linear-gradient(135deg, #0a0f1c 0%, #0f1419 100%);
             color: #ffffff;
             line-height: 1.6;
+            min-height: 100vh;
         }
 
         :root {
@@ -2282,17 +2283,21 @@ async function analyzeChart(imageBase64, symbol, timeframe) {
     setScan(true);
 
     try {
-        const response = await fetch("http://127.0.0.1:8001/analyze", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                image: imageBase64,
-                symbol: symbol,
-                timeframe: timeframe
-            })
-        });
+        const response = await fetch(
+  "https://ai-signals-backend.onrender.com/analyze",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      image: imageBase64,   // ВАЖНО: это base64, как в Swagger
+      symbol: symbol,
+      timeframe: timeframe
+    })
+  }
+);
+
 
         if (!response.ok) {
             const err = await response.json();
@@ -2336,39 +2341,7 @@ async function analyzeChart(imageBase64, symbol, timeframe) {
   --scrollRy: 0deg;
   transform: rotateY(var(--scrollRy)) rotateX(var(--scrollRx));
 }
-
-/* Telegram WebApp viewport fix */
-body.tg {
-  margin: 0 !important;
-  padding: 0 !important;
-  height: 100vh;
-  overflow-x: hidden;
-}
-
-/* Главное: убираем фейковую высоту */
-body.tg .hero {
-  min-height: auto !important;
-  height: auto !important;
-  padding-top: 0.5rem !important;
-  justify-content: flex-start !important;
-  align-items: flex-start !important;
-}
-
-<script>
-  if (window.Telegram && Telegram.WebApp) {
-    Telegram.WebApp.expand();            // 🔥 КЛЮЧ
-    document.body.classList.add("tg");
-  }
-</script>
-
-
 </style>
-
-<script>
-  if (window.Telegram && window.Telegram.WebApp) {
-    document.body.classList.add("tg");
-  }
-</script>
 
 </body>
 </html>
