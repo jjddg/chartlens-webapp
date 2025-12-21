@@ -2201,6 +2201,28 @@
           transform: rotateY(var(--scrollRy)) rotateX(var(--scrollRx));
         }
     </style>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const tg = window.Telegram?.WebApp;
+
+      if (!tg) {
+        alert("❌ Telegram WebApp NOT FOUND (это НЕ WebApp режим)");
+        return;
+      }
+
+      tg.ready();
+      tg.expand();
+
+      const u = tg.initDataUnsafe?.user;
+
+      alert(
+        "✅ Telegram WebApp FOUND\n" +
+        "initDataUnsafe.user exists: " + Boolean(u) + "\n" +
+        "user.id: " + (u?.id ?? "NULL") + "\n" +
+        "raw initDataUnsafe:\n" + JSON.stringify(tg.initDataUnsafe, null, 2)
+      );
+    });
+    </script>
 
 </body>
 </html>
