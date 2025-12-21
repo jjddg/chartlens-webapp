@@ -2258,86 +2258,6 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 </script>
 <script>
-async function analyzeChart(imageBase64, symbol, timeframe) {
-
-alert("TG userId = " + userId);
-
-if (!userId) {
-    showError("Telegram user not detected");
-    return;
-}
-
-btnAnalyze.disabled = true;
-btnAnalyze.textContent = '⏳ Analyzing...';
-setScan(true);
-
-
-    const btnAnalyze = document.getElementById('btnAnalyze');
-    btnAnalyze.disabled = true;
-    btnAnalyze.textContent = '⏳ Analyzing...';
-    setScan(true);
-
-    try {
-        // --- normalize base64 (CRITICAL for iOS / Safari)
-        if (!imageBase64.startsWith("data:image")) {
-            imageBase64 = "data:image/png;base64," + imageBase64;
-        }
-
-        imageBase64 = imageBase64.replace(
-            /^data:image\/(heic|heif);base64,/i,
-            "data:image/jpeg;base64,"
-        );
-
-        const response = await fetch(
-            "https://ai-signals-backend.onrender.com/analyze",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                  user_id: window.APP_USER_ID, // 🔥 КЛЮЧЕВО
-                  image: imageBase64,
-                  symbol: symbol,
-                  timeframe: timeframe
-                })
-            }
-        );
-
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(text || "Server error");
-        }
-
-        const data = await response.json();
-
-        const analysis = {
-            id: Date.now(),
-            symbol,
-            timeframe,
-            chartDescription: data.chartDescription,
-            ai_signal: data.ai_signal,
-            market_insights: data.market_insights,
-            confidence_score: data.confidence_score,
-            created_at: new Date().toISOString()
-        };
-
-        appState.currentAnalysis = analysis;
-        appState.analyses.unshift(analysis);
-        appState.userProfile.daily_analysis_count++;
-
-        displayAnalysisResult(analysis);
-        updateUserInfo();
-
-    } catch (e) {
-        showError(e.message);
-    } finally {
-    btnAnalyze.disabled = false;
-    btnAnalyze.textContent = '🔍 Analyze Chart';
-    setScan(false);
-}
-
-}
 </script>
 
 
@@ -2349,6 +2269,21 @@ setScan(true);
   transform: rotateY(var(--scrollRy)) rotateX(var(--scrollRx));
 }
 </style>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("btnAnalyze");
+    if (!btn) {
+      alert("❌ btnAnalyze NOT FOUND");
+      return;
+    }
+
+    alert("✅ btnAnalyze FOUND");
+
+    btn.addEventListener("click", () => {
+      alert("🔥 REAL CLICK EVENT");
+    });
+  });
+</script>
 
 </body>
 </html>
