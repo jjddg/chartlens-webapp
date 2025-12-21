@@ -1973,68 +1973,6 @@ function handleAnalyze() {
             analyzeChart(imageBase64, symbol, timeframe);
         }
 
-        function analyzeChart(imageUrl, symbol, timeframe) {
-            if (!window.APP_USER_ID) {
-      showError("Open this page from Telegram");
-      return;
-    }
-            const btnAnalyze = document.getElementById('btnAnalyze');
-            btnAnalyze.disabled = true;
-            btnAnalyze.textContent = '⏳ Analyzing...';
-            setScan(true);
-
-            setTimeout(() => {
-                const signal = ['BUY', 'SELL', 'HOLD'][Math.floor(Math.random() * 3)];
-                const confidence = 0.65 + Math.random() * 0.3;
-
-                const descriptions = {
-                    'BUY': [
-                        `${symbol} showing strong bullish momentum with higher highs/lows. Price broken above key resistance. Volume surging on bullish candles. Support at key moving average.`,
-                        `Uptrend confirmed on ${symbol}. Higher lows with pullbacks. Accumulation pattern visible. RSI near overbought but not extreme.`
-                    ],
-                    'SELL': [
-                        `${symbol} showing weakness: lower highs/lows. Broken below key support. Volume declining on down moves. Further downside potential.`,
-                        `Bearish structure on ${symbol}. Failed above resistance. Heavy volume on downside. Support next level to watch.`
-                    ],
-                    'HOLD': [
-                        `${symbol} consolidating in tight range. Bouncing support/resistance. Volume declining. Breakout confirmation needed.`,
-                        `${symbol} range consolidation. Key level touches. Volume insufficient for directional move. Patience required.`
-                    ]
-                };
-
-                const insights = {
-                    'BTCUSDT': 'Bitcoin: Institutional adoption continues. Spot ETF flows positive. Macro improving. Fed decision watch.',
-                    'ETHUSDT': 'Ethereum: DeFi growth strong. Layer 2 adoption accelerating. Staking yields attractive.',
-                    'BNBUSDT': 'BNB: BSC metrics solid. Governance updates positive. Regulatory clarity needed.',
-                    'SOLUSDT': 'SOL: Ecosystem recovery on track. Dev activity increasing. Network stability improving.',
-                    'ADAUSDT': 'ADA: Smart contracts active. Defi building. Cardano adoption growing.'
-                };
-
-                const analysis = {
-                    id: appState.analyses.length + 1,
-                    symbol: symbol,
-                    timeframe: timeframe,
-                    image_url: imageUrl,
-                    chartDescription: descriptions[signal][Math.floor(Math.random() * descriptions[signal].length)],
-                    ai_signal: signal,
-                    market_insights: insights[symbol] || 'Crypto market dynamic. Watch major support/resistance levels.',
-                    confidence_score: confidence,
-                    created_at: new Date().toISOString()
-                };
-
-                appState.currentAnalysis = analysis;
-                appState.analyses.unshift(analysis);
-                appState.userProfile.daily_analysis_count++;
-
-                displayAnalysisResult(analysis);
-                updateUserInfo();
-
-                setScan(false);
-
-                btnAnalyze.disabled = false;
-                btnAnalyze.textContent = '🔍 Analyze Chart';
-            }, 2500);
-        }
 
         function displayAnalysisResult(analysis) {
             const signalText = document.getElementById('signalText');
