@@ -1667,8 +1667,12 @@ body { padding-bottom: env(safe-area-inset-bottom); }
                             <option value="1w">1w</option>
                         </select>
                     </div>
-                    <button id="btnAnalyze" class="btn btn-primary btn-full" onclick="handleAnalyze()">
-                        🔍 Analyze Chart
+                    <button
+                      id="btnAnalyze"
+                      style="z-index:9999; position:relative;"
+                      onclick="alert('CLICK OK')"
+                    >
+                      🔍 Analyze Chart
                     </button>
                 </div>
 
@@ -2263,6 +2267,11 @@ if (!userId) {
     return;
 }
 
+btnAnalyze.disabled = true;
+btnAnalyze.textContent = '⏳ Analyzing...';
+setScan(true);
+
+
     const btnAnalyze = document.getElementById('btnAnalyze');
     btnAnalyze.disabled = true;
     btnAnalyze.textContent = '⏳ Analyzing...';
@@ -2323,10 +2332,11 @@ if (!userId) {
     } catch (e) {
         showError(e.message);
     } finally {
-        setScan(false);
-        btnAnalyze.disabled = false;
-        btnAnalyze.textContent = '🔍 Analyze Chart';
-    }
+    btnAnalyze.disabled = false;
+    btnAnalyze.textContent = '🔍 Analyze Chart';
+    setScan(false);
+}
+
 }
 </script>
 
