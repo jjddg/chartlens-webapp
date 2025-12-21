@@ -2181,176 +2181,165 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
     </div>
 
-
 <script>
-(function(){
-  const g = document.getElementById('graph');
+/* =========================================================
+   CORE STATE
+========================================================= */
+const appState = {
+  userId: null,
+  access: "none", // none | pro | ultra
+  currentAnalysis: null
+};
+
+/* =========================================================
+   TELEGRAM INIT
+========================================================= */
+(function initTelegram(){
+  const tg = window.Telegram?.WebApp;
+  if (!tg) return;
+
+  try {
+    tg.ready();
+    tg.expand();
+    appState.userId = tg.initDataUnsafe?.user?.id || null;
+  } catch(e) {
+    console.warn("Telegram init failed", e);
+  }
+})();
+
+/* =========================================================
+   ACCESS CHECK
+========================================================= */
+async function checkAccess() {
+  if (!appState.userId) return;
+
+  const res = await fetch(
+    `https://ai-signals-backend.onrender.com/api/check-access?user_id=${appState.userId}`
+  );
+
+  if (!res.ok) throw new Error("Access check failed");
+  const data = await res.json();
+  appState.access = data.access;
+}
+
+/* =========================================================
+   3D GRAPH (SCROLL + TOUCH)
+========================================================= */
+(function graph3D(){
+  const g = document.getElementById("graph");
   if (!g) return;
 
-  // add touch tilt for phones
   let raf = 0, nx = 0.5, ny = 0.5;
-  const clamp01 = (v)=>Math.max(0, Math.min(1, v));
+  let baseRx = 0, baseRy = 0;
+  const clamp01 = v => Math.max(0, Math.min(1, v));
 
   function apply(){
     raf = 0;
-    const ry = (0.5 - nx) * 12;  // rotateY
-    const rx = (ny - 0.5) * 10;  // rotateX
-    g.style.transform = `rotateY(calc(var(--scrollRy) + ${ry}deg)) rotateX(calc(var(--scrollRx) + ${rx}deg))`;
+    const ry = (nx - 0.5) * 12 + baseRy;
+    const rx = (ny - 0.5) * 10 + baseRx;
+    g.style.transform = `rotateY(${ry}deg) rotateX(${rx}deg)`;
   }
 
-  function onPoint(x, y){
+  function onPoint(x,y){
     const r = g.getBoundingClientRect();
-    nx = clamp01((x - r.left) / Math.max(1, r.width));
-    ny = clamp01((y - r.top) / Math.max(1, r.height));
+    nx = clamp01((x - r.left) / r.width);
+    ny = clamp01((y - r.top) / r.height);
     if (!raf) raf = requestAnimationFrame(apply);
   }
 
-  g.addEventListener('touchmove', (e)=>{
-    const t = e.touches && e.touches[0];
-    if (!t) return;
-    onPoint(t.clientX, t.clientY);
-  }, { passive: true });
+  g.addEventListener("touchmove", e=>{
+    const t = e.touches?.[0];
+    if (t) onPoint(t.clientX, t.clientY);
+  }, { passive:true });
 
-  g.addEventListener('touchend', ()=>{
-    g.style.transform = 'rotateY(0deg) rotateX(0deg)';
-  }, { passive: true });
+  g.addEventListener("touchend", ()=>{
+    nx = 0.5; ny = 0.5;
+    if (!raf) raf = requestAnimationFrame(apply);
+  }, { passive:true });
 
-  // Telegram WebApp: expand if available (safe no-op in browser)
-  const tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+  window.addEventListener("scroll", ()=>{
+    const y = window.scrollY || 0;
+    baseRy = Math.sin(y * 0.006) * 6;
+    baseRx = Math.cos(y * 0.005) * 4;
+    if (!raf) raf = requestAnimationFrame(apply);
+  }, { passive:true });
+
+  apply();
 })();
-</script>
 
-
-
-<script>
-(function(){
-  // === Glow blocks when they enter viewport ===
-  const targets = Array.from(document.querySelectorAll('.step, .plan, .card'));
-  if ('IntersectionObserver' in window && targets.length) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) e.target.classList.add('in-view');
-        else e.target.classList.remove('in-view');
-      });
-    }, { threshold: 0.25 });
-    targets.forEach(t => io.observe(t));
-  }
-
-  // === Scroll-driven 3D motion for HERO graph ===
-  const g = document.getElementById('graph');
-  if (!g) return;
-
-  // We'll blend pointer tilt (already exists) with a scroll wobble.
-  // Scroll wobble is subtle: keeps "classy", not carnival.
-  let scrollRaf = 0;
-  let baseRx = 0, baseRy = 0;
-
-  function computeBase(){
-    const y = window.scrollY || document.documentElement.scrollTop || 0;
-    // Normalize to a smooth periodic motion
-    baseRy = Math.sin(y * 0.006) * 6;  // left-right
-    baseRx = Math.cos(y * 0.005) * 4;  // up-down
-  }
-
-  function applyBase(){
-    scrollRaf = 0;
-    computeBase();
-    // If mouse/touch tilt also sets transform, we still want scroll to matter.
-    // We'll store base as CSS variables and let the existing handler write rotations additively if present.
-    g.style.setProperty('--scrollRy', baseRy.toFixed(2) + 'deg');
-    g.style.setProperty('--scrollRx', baseRx.toFixed(2) + 'deg');
-  }
-
-  function onScroll(){
-    if (!scrollRaf) scrollRaf = requestAnimationFrame(applyBase);
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  applyBase();
-
-  // Patch: make current transform include scroll rotation even when pointer handler runs.
-  // We wrap the existing pointer transform by listening and reapplying with scroll vars.
-  // If another script sets g.style.transform, we can't intercept it, so we set a CSS rule fallback below.
-})();
-</script>
-<script>
+/* =========================================================
+   ANALYZE CHART (REAL BACKEND)
+========================================================= */
 async function analyzeChart(imageBase64, symbol, timeframe) {
-    const btnAnalyze = document.getElementById('btnAnalyze');
-    btnAnalyze.disabled = true;
-    btnAnalyze.textContent = '⏳ Analyzing...';
-    setScan(true);
+  if (!appState.userId) {
+    showError("Open via Telegram");
+    return;
+  }
 
-    try {
-        // --- normalize base64 (CRITICAL for iOS / Safari)
-        if (!imageBase64.startsWith("data:image")) {
-            imageBase64 = "data:image/png;base64," + imageBase64;
-        }
+  const btn = document.getElementById("btnAnalyze");
+  btn.disabled = true;
+  btn.textContent = "⏳ Analyzing…";
+  setScan(true);
 
-        imageBase64 = imageBase64.replace(
-            /^data:image\/(heic|heif);base64,/i,
-            "data:image/jpeg;base64,"
-        );
+  try {
+    await checkAccess();
 
-        const response = await fetch(
-            "https://ai-signals-backend.onrender.com/analyze",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    image: imageBase64,
-                    symbol: symbol,
-                    timeframe: timeframe
-                })
-            }
-        );
-
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(text || "Server error");
-        }
-
-        const data = await response.json();
-
-        const analysis = {
-            id: Date.now(),
-            symbol,
-            timeframe,
-            chartDescription: data.chartDescription,
-            ai_signal: data.ai_signal,
-            market_insights: data.market_insights,
-            confidence_score: data.confidence_score,
-            created_at: new Date().toISOString()
-        };
-
-        appState.currentAnalysis = analysis;
-        appState.analyses.unshift(analysis);
-        appState.userProfile.daily_analysis_count++;
-
-        displayAnalysisResult(analysis);
-        updateUserInfo();
-
-    } catch (e) {
-        showError(e.message);
-    } finally {
-        setScan(false);
-        btnAnalyze.disabled = false;
-        btnAnalyze.textContent = '🔍 Analyze Chart';
+    // normalize base64 (iOS / HEIC fix)
+    if (!imageBase64.startsWith("data:image")) {
+      imageBase64 = "data:image/png;base64," + imageBase64;
     }
+
+    imageBase64 = imageBase64.replace(
+      /^data:image\/(heic|heif);base64,/i,
+      "data:image/jpeg;base64,"
+    );
+
+    const res = await fetch(
+      "https://ai-signals-backend.onrender.com/analyze",
+      {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({
+          user_id: appState.userId,
+          image: imageBase64,
+          symbol,
+          timeframe
+        })
+      }
+    );
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+
+    const data = await res.json();
+
+    const analysis = {
+      symbol,
+      timeframe,
+      ai_signal: data.ai_signal,
+      chartDescription: data.chartDescription,
+      market_insights: data.market_insights,
+      confidence_score: data.confidence_score
+    };
+
+    appState.currentAnalysis = analysis;
+    displayAnalysisResult(analysis);
+
+  } catch(e) {
+    showError(e.message);
+  } finally {
+    setScan(false);
+    btn.disabled = false;
+    btn.textContent = "🔍 Analyze Chart";
+  }
 }
 </script>
-
 
 <style>
-/* Blend scroll rotation into the graph transform using CSS vars */
 #graph {
-  --scrollRx: 0deg;
-  --scrollRy: 0deg;
-  transform: rotateY(var(--scrollRy)) rotateX(var(--scrollRx));
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 </style>
-
-</body>
-</html>
