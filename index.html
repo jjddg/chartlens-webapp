@@ -13,14 +13,29 @@ document.getElementById("btn").onclick = async () => {
   alert("CLICK");
 
   try {
-    const res = await fetch("https://ai-signals-backend.onrender.com/");
+    const res = await fetch(
+      "https://ai-signals-backend.onrender.com/analyze",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: 123456,
+          image: "TEST_IMAGE_BASE64",
+          symbol: "BTCUSDT",
+          timeframe: "1h"
+        })
+      }
+    );
+
     const text = await res.text();
-    alert("FETCH OK");
+    alert("ANALYZE RESPONSE:\n" + text);
+
   } catch (e) {
     alert("FETCH ERROR: " + e.message);
   }
 };
 </script>
+
 
 </body>
 </html>
