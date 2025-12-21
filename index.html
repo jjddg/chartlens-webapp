@@ -2,15 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Test Analyze</title>
+  <title>Test Analyze (Base64)</title>
 </head>
 <body>
 
+<input type="file" id="file" accept="image/*" />
+<br/><br/>
 <button id="btn">TEST ANALYZE</button>
 
 <script>
+let imageBase64 = null;
+
+// 1) Читаем файл и получаем base64
+document.getElementById("file").addEventListener("change", () => {
+  const file = document.getElementById("file").files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    // reader.result = "data:image/png;base64,AAAA..."
+    imageBase64 = reader.result.split(",")[1]; // <-- ЧИСТЫЙ base64
+    alert("IMAGE LOADED (base64 length = " + imageBase64.length + ")");
+  };
+  reader.readAsDataURL(file);
+});
+
+// 2) Отправляем в backend
 document.getElementById("btn").onclick = async () => {
-  alert("CLICK");
+  if (!imageBase64) {
+    alert("SELECT IMAGE FIRST");
+    return;
+  }
 
   try {
     const res = await fetch(
@@ -19,8 +41,8 @@ document.getElementById("btn").onclick = async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: 123456,
-          image: "TEST_IMAGE_BASE64",
+          user_id: 123456,        // заглушка, ок
+          image: imageBase64,     // РЕАЛЬНЫЙ base64
           symbol: "BTCUSDT",
           timeframe: "1h"
         })
@@ -35,8 +57,6 @@ document.getElementById("btn").onclick = async () => {
   }
 };
 </script>
-
-
 
 </body>
 </html>
