@@ -2298,6 +2298,16 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 <script>
 async function analyzeChart(imageBase64, symbol, timeframe) {
+    const tg = window.Telegram?.WebApp;
+const userId = tg?.initDataUnsafe?.user?.id;
+
+alert("TG userId = " + userId);
+
+if (!userId) {
+    showError("Telegram user not detected");
+    return;
+}
+
     const btnAnalyze = document.getElementById('btnAnalyze');
     btnAnalyze.disabled = true;
     btnAnalyze.textContent = '⏳ Analyzing...';
