@@ -1667,13 +1667,13 @@ body { padding-bottom: env(safe-area-inset-bottom); }
                             <option value="1w">1w</option>
                         </select>
                     </div>
-                    <button
+                    <button>
+                      type="button"
                       id="btnAnalyze"
-                      style="z-index:9999; position:relative;"
-                      onclick="alert('CLICK OK')"
-                    >
+                      onclick="handleAnalyze()"
                       🔍 Analyze Chart
                     </button>
+
                 </div>
 
                 <!-- Analysis Result Card -->
@@ -2283,6 +2283,50 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("🔥 REAL CLICK EVENT");
     });
   });
+</script>
+<script>
+async function analyzeChart(imageBase64, symbol, timeframe) {
+    const btnAnalyze = document.getElementById('btnAnalyze');
+
+    const userId = window.APP_USER_ID;
+    if (!userId) {
+        showError("Telegram user not detected");
+        return;
+    }
+
+    btnAnalyze.disabled = true;
+    btnAnalyze.textContent = '⏳ Analyzing...';
+
+    try {
+        const response = await fetch(
+            "https://ai-signals-backend.onrender.com/analyze",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_id: userId,
+                    image: imageBase64,
+                    symbol: symbol,
+                    timeframe: timeframe
+                })
+            }
+        );
+
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(err);
+        }
+
+        const data = await response.json();
+        displayAnalysisResult(data);
+
+    } catch (e) {
+        showError(e.message || "Analyze failed");
+    } finally {
+        btnAnalyze.disabled = false;
+        btnAnalyze.textContent = '🔍 Analyze Chart';
+    }
+}
 </script>
 
 </body>
