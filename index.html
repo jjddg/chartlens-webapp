@@ -1454,6 +1454,25 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 </style>
 </head>
 <body>
+<script>
+  // === Telegram WebApp bootstrap (CRITICAL) ===
+  if (window.Telegram && window.Telegram.WebApp) {
+    const tg = window.Telegram.WebApp;
+    tg.ready();          // 👈 ОБЯЗАТЕЛЬНО
+    tg.expand();         // опционально, но полезно
+
+    // сразу сохраним user_id
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      window.APP_USER_ID = tg.initDataUnsafe.user.id;
+      console.log("TG user detected:", window.APP_USER_ID);
+    } else {
+      console.warn("TG initDataUnsafe.user is missing");
+    }
+  } else {
+    console.warn("Telegram WebApp not found");
+  }
+</script>
+
     <!-- Header -->
     <header class="header">
         <div class="header-content">
@@ -2236,8 +2255,6 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 <script>
 async function analyzeChart(imageBase64, symbol, timeframe) {
-    const tg = window.Telegram?.WebApp;
-const userId = tg?.initDataUnsafe?.user?.id;
 
 alert("TG userId = " + userId);
 
