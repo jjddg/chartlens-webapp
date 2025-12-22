@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TG WebApp TEST</title>
+  <title>TG WebApp TEST2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
@@ -27,6 +27,13 @@
   </style>
 </head>
 <body>
+<script>
+alert(
+  "window.Telegram = " + typeof window.Telegram + "\n" +
+  "Telegram.WebApp = " + typeof window.Telegram?.WebApp
+);
+</script>
+
 <script>
 alert(
   "Telegram exists: " + !!window.Telegram + "\n" +
