@@ -1441,6 +1441,25 @@
     </style>
 </head>
 <body>
+    <script>
+    let TG_USER = null;
+
+    (function waitTelegram() {
+      if (window.Telegram && window.Telegram.WebApp) {
+        const tg = window.Telegram.WebApp;
+
+        tg.ready();
+        tg.expand();
+
+        TG_USER = tg.initDataUnsafe?.user || null;
+
+        console.log("✅ TG_USER:", TG_USER);
+      } else {
+        setTimeout(waitTelegram, 50);
+      }
+    })();
+    </script>
+
     <!-- Header -->
     <header class="header">
         <div class="header-content">
@@ -2157,11 +2176,18 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
+                    if (!TG_USER?.id) {
+                      showError("Telegram user not detected. Please reopen app from Telegram.");
+                      return;
+                    }
+
                     body: JSON.stringify({
-                        image: imageBase64,
-                        symbol: symbol,
-                        timeframe: timeframe
+                      user_id: TG_USER.id,
+                      image: imageBase64,
+                      symbol: symbol,
+                      timeframe: timeframe
                     })
+
                 });
                 if (!response.ok) {
                     const err = await response.json();
