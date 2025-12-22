@@ -2202,27 +2202,25 @@
         }
     </style>
     <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const tg = window.Telegram?.WebApp;
+    (function waitTelegram() {
+      if (window.Telegram && window.Telegram.WebApp) {
+        const tg = window.Telegram.WebApp;
 
-      if (!tg) {
-        alert("❌ Telegram WebApp NOT FOUND (это НЕ WebApp режим)");
-        return;
+        tg.ready();
+        tg.expand();
+
+        alert(
+          "✅ WebApp OK\n" +
+          "platform: " + tg.platform + "\n" +
+          "version: " + tg.version
+        );
+
+      } else {
+        setTimeout(waitTelegram, 50);
       }
-
-      tg.ready();
-      tg.expand();
-
-      const u = tg.initDataUnsafe?.user;
-
-      alert(
-        "✅ Telegram WebApp FOUND\n" +
-        "initDataUnsafe.user exists: " + Boolean(u) + "\n" +
-        "user.id: " + (u?.id ?? "NULL") + "\n" +
-        "raw initDataUnsafe:\n" + JSON.stringify(tg.initDataUnsafe, null, 2)
-      );
-    });
+    })();
     </script>
+
 
 </body>
 </html>
